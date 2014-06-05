@@ -1,0 +1,7 @@
+Database name :	db439337539
+Host name :	db439337539.db.1and1.com
+Port :	3306
+User name :	dbo439337539
+Description :	Drupal7SOS
+Version :	MySQL5.0
+Status :	 setup started

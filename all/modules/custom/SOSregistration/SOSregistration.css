@@ -1,0 +1,56 @@
+/**
+*  @file: SOSregistration.css
+*  css overrides and customizations for User Registration, Profile, and Edit forms
+*
+**/
+
+
+/******************** user registration / profile form ***************/
+#profile2_main_form_group_listserv_options {
+  width:46%;
+  float:left;
+}
+#profile2_main_form_group_usr_preferences {
+  width:46%;
+  float:right;
+}
+
+.faux-button {
+  background-color: #395083;
+  color: white;
+  font-weight:bold;
+  text-transform:uppercase;
+  padding:5px 10px;
+  border:#666666;
+  display:inline-block;
+  margin-left:20px;
+  margin-top:5px;
+}
+
+.faux-button:hover {
+  background-color: #cccccc;
+  color: #395083;
+}
+
+#edit-actions {
+  clear:both;
+}
+
+/*** people management custom view in admin theme ***/
+#views-form-admin-views-user-system-1 .views-table tr, #views-form-admin-views-user-system-1 .views-table td {
+  vertical-align:top;
+}
+
+#views-form-admin-views-user-system-1 .views-table .views-field-nothing, #views-form-admin-views-user-system-1 .views-table .views-field-nothing-1 {
+  font-size: 11px;
+  line-height: 13px;
+}
+
+
+.page-admin-people-create .fieldset-legend, *+html .page-admin-people-create .fieldset-legend, * html .page-admin-people-create .fieldset-legend {
+clear:both;
+width:auto;
+padding: 0 10px 0 10px;
+display:inline-block;
+position:relative;
+}

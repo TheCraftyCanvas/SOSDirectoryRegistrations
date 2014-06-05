@@ -1,0 +1,8 @@
+name = SOSregistration
+description = Overrides user registration form field order, in conjunction with Profiles2 module.
+core = 7.x
+package = sos2012
+dependencies[] = profile2
+
+scripts[] = SOSregistration.js
+stylesheets[all][] = SOSregistration.css

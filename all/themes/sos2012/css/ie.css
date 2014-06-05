@@ -1,0 +1,214 @@
+/**
+ * Footheme ie.css
+ *
+ * SEE footheme_preprocess_html() in
+ * template.php for detials on how to
+ * load this or additional IE stylesheets.
+ */
+
+*+html #page-wrapper, * html #page-wrapper {
+  width:100%;
+  position:absolute;
+}
+
+*+html #header-wrapper, *+html #menu-bar-wrapper, *+html #content-wrapper, *+html #footer-wrapper, * html #header-wrapper, * html #menu-bar-wrapper, * html #content-wrapper, * html #footer-wrapper {
+  width:100%;
+  clear:both;
+  position:relative;
+  text-align:center;
+}
+
+*+html #header-wrapper .container, *+html #menu-bar-wrapper .container, *+html #content-wrapper .container, *+html #footer-wrapper .container, * html #header-wrapper .container, * html #menu-bar-wrapper .container, * html #content-wrapper .container, * html #footer-wrapper .container {
+  width: 1260px;
+  margin: 0 auto !important;
+  text-align:left;
+}
+
+*+html #logo, * html #logo {
+  max-width:126px;
+}
+*+html #site-name, * html #sitename {
+  display:none;
+  visibility:hidden;
+}
+*+html #site-slogan, * html #site-slogan {
+  max-width:108px;
+  float:left;
+  display:inline-block;
+}
+
+*+html .site-name-hidden #logo, *+html .site-name-hidden #branding hgroup, * html .site-name-hidden #logo, * html .site-name-hidden #branding hgroup {
+  display: inline-block;
+  padding: 0 !important;
+  float:left;
+}
+
+
+*+html .sf-menu, * html .sf-menu {
+margin-bottom: 0;
+max-height: 30px;
+line-height: 30px;
+}
+*+html #menu-bar .menu-wrapper > ul > li, * html #menu-bar .menu-wrapper > ul > li {
+display: inline-block;
+margin: 0.333em 0 0;
+padding-left: 0;
+}
+*+html .sf-menu.sf-style-default a, * html .sf-menu.sf-style-default a {
+border-left: 1px solid white;
+border-top: 1px solid #CFDEFF;
+padding: 0.75em 1em;
+}
+
+*+html .sf-menu.sf-style-default li a, * html .sf-menu.sf-style-default li a {
+  color: #D5D9E4 !important;
+}
+*+html .sf-menu.sf-style-default li a:hover, * html .sf-menu.sf-style-default li a:hover {
+  color: #395083 !important;
+}
+*+html #menu-bar ul > li > a, * html #menu-bar ul > li > a {
+color: white;
+display: block;
+line-height: 1;
+padding: 0.833em 20px 1.083em;
+}
+*+html .sf-menu li.sf-depth-1, * html .sf-menu li.sf-depth-1  {
+float: left;
+position: static;
+z-index: 498;
+}
+*+html .sf-menu li.sf-depth-2, * html .sf-menu li.sf-depth-2 {
+z-index: 499;
+position:relative;
+float: left;
+}
+
+
+
+*+html .breadcrumb ol, * html .breadcrumb ol, *+html #crumbs, * html #crumbs {
+  margin: 0;
+  padding: 0;
+}
+
+*+html .breadcrumb ol li, * html .breadcrumb ol li, *+html #crumbs .crumb, * html #crumbs .crumb {
+  list-style: none;
+  display: inline;
+}
+
+*+html .views-exposed-form .views-exposed-widget, * html .views-exposed-form .views-exposed-widget {
+  width:100%;
+  clear:both;
+}
+
+*+html span.fieldset-legend, * html span.fieldset-legend {
+  display:inline-block;
+  clear:both;
+}
+
+*+html #content-wrapper, * html #content-wrapper {
+  display:inline-block;
+  clear:both;
+  position:relative;
+}
+
+*+html #columns, * html #columns {
+  width:100%;
+  display:block;
+}
+
+*+html #content-column, * html #content-column {
+  position:relative;
+  width:70%;
+  float:left;
+  display:inline-block;
+  clear:left;
+  position:relative;
+}
+
+*+html .content-inner, * html .content-inner {
+  width:100%;
+  margin-left:0px !important;
+}
+
+*+html .region-sidebar-first, * html .region-sidebar-first {
+  position:relative;
+  width:30%;
+  margin-left:0 !important;
+  float:left;
+  display:inline-block;
+  clear:right;
+}
+
+*+html #footer-wrapper, * html #footer-wrapper {
+  display:inline-block;
+  clear:both;
+}
+
+
+*+html .front #main-content .content-style, * html .front #main-content .content-style {
+border: 3px solid #233150;
+}
+
+*+html .front section#block-views-programs-block-1, * html .front section#block-views-programs-block-1 {
+width:auto;
+height:auto;
+margin: 5px 10px;
+border: 1px solid #DDD;
+border-radius: 5px;
+padding: 15px 20px;
+}
+
+*+html .front #block-block-3, * html .front #block-block-3 {
+width:auto;
+height:auto;
+margin: 5px 10px;
+border: 1px solid #DDD;
+border-radius: 5px;
+padding: 15px 20px;
+}
+
+
+*+html .front #block-views-programs-block-1 h2.block-title, * html .front #block-views-programs-block-1 h2.block-title {
+font-size: 24px;
+padding-bottom: 5px;
+}
+
+*+html .front #block-block-3 h2.block-title, * html .front #block-block-3 h2.block-title {
+  font-size:24px;
+  padding-bottom:5px;
+}
+
+*+html .sidebar .block-title, * html .sidebar .block-title {
+  font-size:18px !important;
+}
+
+*+html .program-name h2 a, * html .program-name h2 a {
+  font-size: 14px;
+}
+
+*+html h1.program-name, * html h1.program-name {
+  font-size: 1.3em;
+}
+
+*+html .views-table tr, *+html .views-table td, * html .views-table tr, * html .views-table td {
+  vertical-align:top;
+}
+
+*+html #article-7 h1.article-title, * html #article-7 h1.article-title {
+  font-size:36px;
+}
+
+*+html .block-title, * html .block-title {
+  text-transform:none;
+}
+
+*+html #article-7 nav, *+html .feed-icon, * html #article-7 nav, * html .feed-icon {
+display:none;
+visibility:hidden;
+}
+
+*+html #article-7, * html #article-7 {
+margin-bottom:0;
+}
+
+

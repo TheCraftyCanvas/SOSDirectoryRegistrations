@@ -1,0 +1,8 @@
+/* Standard layout three-col-right, for IE8 and below. Note that rounding errors may occur in IE7 and below. */
+.two-sidebars .content-inner {margin-right: 30%; margin-left: 0;}
+.sidebar-first .content-inner {margin-right: 30%; margin-left: 0;}
+.sidebar-second .content-inner {margin-right: 0%; margin-left: 0;}
+.region-sidebar-first {width: 30%; margin-left: -30%;}
+.region-sidebar-second {width: 0%; margin-left: -0%; clear: none;}
+.sidebar-first .region-sidebar-first {width: 30%; margin-left: -30%;}
+.container {width: 100%; max-width: 1260px;}

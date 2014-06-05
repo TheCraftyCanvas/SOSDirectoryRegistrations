@@ -1,0 +1,285 @@
+/**
+ * sos2012 sos2012.css
+ *
+ * Use this file to add your custom styles.
+ *
+ * You can change the name of this file, just
+ * remember to update the name in the info file
+ * as well.
+ */
+
+/******************* General Layout Formatting ********************************/
+
+ .region-sidebar-first {
+  padding-top:30px;
+}
+
+.block-title {
+  text-transform:none;
+}
+.sidebar .block-title {
+  font-size:18px !important;
+}
+
+
+
+/******************* Header Formatting ********************************/
+
+ #branding {
+padding: 0px 0 0px 10px !important;
+}
+#site-slogan {
+color: #ffffff !important;
+}
+#header-wrapper {
+  background: url('../images/blue-gradient.png') repeat-y top center;
+}
+#menu-bar-wrapper {
+  background: url('../images/blue-gradient.png') repeat-y top center;
+}
+#menu-bar .sf-horizontal.sf-style-none li ul {
+background-image: linear-gradient(bottom, rgb(0,0,0) 0%, rgb(204,204,204) 15%);
+background-image: -o-linear-gradient(bottom, rgb(0,0,0) 0%, rgb(204,204,204) 15%);
+background-image: -moz-linear-gradient(bottom, rgb(0,0,0) 0%, rgb(204,204,204) 15%);
+background-image: -webkit-linear-gradient(bottom, rgb(0,0,0) 0%, rgb(204,204,204) 15%);
+background-image: -ms-linear-gradient(bottom, rgb(0,0,0) 0%, rgb(204,204,204) 15%);
+
+background-image: -webkit-gradient(
+	linear,
+	left bottom,
+	left top,
+	color-stop(0, rgb(0,0,0)),
+	color-stop(0.15, rgb(204,204,204))
+);
+}
+#menu-bar {
+padding: 0 !important;
+}
+#menu-bar-wrapper {
+border-bottom:2px solid #000;
+margin-bottom:10px;
+}
+
+.site-name-hidden #logo, .site-name-hidden #branding hgroup { display:inline-block; }
+#logo { padding:0 !important; }
+#logo a img { height:120px; }
+
+#site-slogan {
+  font-size: 22px;
+  font-style: italic;
+  text-decoration: underline;
+  padding: 80px 0 0 40px;
+  font-family: Helvetica, Sans-serif;
+}
+
+/******************* Superfish Main Menu Formatting *******************/
+.sf-menu.sf-style-default li, .sf-menu.sf-style-default.sf-navbar {
+background: #395083 !important;
+color:#D5D9E4 !important;
+font-weight:bold;
+}
+.sf-menu.sf-style-default li:hover {
+background:#D5D9E4 !important;
+color: #395083 !important;
+font-weight:bold;
+}
+
+#menu-bar ul > li:hover > a {
+color: #395083;
+}
+#menu-bar ul > li > a {
+color: #ffffff;
+}
+
+.sf-menu.sf-style-default a {
+border-left: 1px solid
+white;
+border-top: 1px solid
+#CFDEFF;
+padding: 0.75em 1em;
+}
+
+/**************** footer *******************/
+#footer-wrapper {
+  padding-top:5px;
+  background: url('../images/lite-blue-gradient.png') repeat-y top center;
+  color:#fff !important;
+}
+
+#footer-wrapper a, #footer-wrapper a:visited, #footer-wrapper:active, #footer-wrapper a:hover {
+color:#fff !important;
+text-decoration:none;
+border-bottom: 1px dotted #fff;
+}
+
+.block-region-footer {
+  margin:0;
+  padding:0;
+  font-size:11px;
+}
+
+.block-region-footer p, .block-region-footer span {
+  margin:0;
+  padding:0;
+}
+
+#block-block-1.block-region-footer  {
+  width:50%;
+  float:right;
+  text-align:right;
+  display:inline-block;
+  clear:right;
+}
+#block-block-4.block-region-footer  {
+  width:50%;
+  float:left;
+  text-align:left;
+  display:inline-block;
+  clear:left;
+}
+
+/***** home page mission statement ****/
+.front #main-content .content-style {
+  border: 1px solid #233150;
+  box-shadow: 1px 3px 8px 3px #233150;
+  padding: 25px 30px 0px;
+}
+.front #block-system-main {
+  margin-bottom: 0px;
+}
+.front #main-content {
+  padding-bottom: 10px;
+}
+#article-7 h1.article-title {
+  font-size:36px;
+}
+#article-7 nav, .feed-icon {
+display:none;
+visibility:hidden;
+}
+#article-7 {
+margin-bottom:0;
+}
+
+/***** home page benefits block ****/
+.front #block-block-3 {
+  margin: 5px 10px;
+  border: 1px solid #DDD;
+  border-radius: 5px;
+  padding: 15px 20px;
+}
+.front #block-block-3 h2.block-title {
+  font-size:24px;
+  padding-bottom:5px;
+}
+
+.front .submitted {
+  display:none;
+  visibility:hidden;
+}
+
+
+/***** home page upcoming program block ****/
+.front #block-views-programs-block-1 {
+  margin: 5px 10px;
+  border: 1px solid #DDD;
+  border-radius: 5px;
+  padding: 15px 20px;
+}
+
+.front #block-views-programs-block-1 h2.block-title {
+  font-size:24px;
+  padding-bottom:5px;
+}
+
+
+/* Program page and block formatting */
+.paypal-add-to-cart {
+  float:right;
+  display:inline-block;
+  position: relative;
+  top: 15px;
+}
+
+.program-registration-options {
+  display:inline-block;
+  width:100%;
+  padding-top:10px;
+}
+.program-registration-options form {
+  margin:20px 0 0 0;
+  padding:0 0 0 15px;
+  float:right;
+}
+.program-registration-options form br{
+  display:none;
+}
+.view-programs table .program-name {
+  width:60%;
+  padding: 5px 8px;
+}
+.program-name h2 a {
+  font-size: 14px;
+}
+.program-flyer-link {
+  font-size:12px;
+}
+
+.view-display-id-block_1 .program-duration {
+  font-weight:bold;
+  font-style:italic;
+}
+.view-display-id-block_1 .program-location {
+  padding-left:15px;
+}
+
+.view-id-programs .item-list {
+  padding-bottom:20px;
+}
+.view-id-programs h4.scheduling-notes-heading {
+
+}
+.view-id-programs .views-field-webform-form-body {
+  max-width:560px;
+}
+
+.professional-titles, .article-title a, .article-title a:visited  {
+  color: #395083 !important;
+}
+
+h1.program-name {
+  font-size: 1.3em;
+}
+
+
+/* Taxonomy page formatting */
+.page-taxonomy-term h1.page-title {
+margin: 0 0 0.3em;
+}
+.view-id-taxonomy_term h1.article-title {
+font-size: 1.231em;
+color: #395083 !important;
+}
+
+/****************/
+.view-display-id-page_2 .views-row {
+  margin-top:20px;
+  padding-top:20px;
+  border-top:1px solid #395083;
+}
+
+.view-display-id-page_2 .views-row-first {
+  margin-top:0;
+  padding-top:0;
+  border-top:none;
+}
+
+.page-type-paypal-donate .submitted {
+  visibility: hidden;
+  display:none;
+}
+
+.views-table tr, .views-table td {
+  vertical-align:top;
+}
+

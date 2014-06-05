@@ -1,0 +1,112 @@
+Paypal account registered under:  tockyLC@aol.com
+
+Donation Button:
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="AWDME854VFLNE">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+
+ 
+Annual Membership for Specialists of Schools:
+<form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="B7FYBJD476CZS">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_cart_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+
+
+CE Credits for Specialists of Schools Workshop:
+<form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="F385SALFY248Y">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_cart_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+
+
+Act 48 Credits for Specialists of Schools for Workshop:
+<form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="RLFEH78YFY27N">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_cart_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+
+
+Non-Member Fee for Specialists of Schools Workshop:
+<form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="W4H6NQGYVCR6C">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_cart_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+
+
+View Cart:
+<form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
+">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_viewcart_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+
+
+
+
+$form['paypal'] = array(
+  '#type' => 'fieldset', 
+  '#title' => t('Paypal Values'), 
+  '#weight' => 95, 
+  '#collapsible' => FALSE, 
+  '#collapsed' => TRUE,
+  '#attributes' => array('class' => array('paypal')),
+);    
+
+//<form action="https://www.paypal.com/cgi-bin/webscr" method="post" id="payPalForm">
+
+    $form['paypal']['cmd'] = array(
+      '#type' => 'hidden',
+      '#value' => '_xclick',
+    );
+//<input type="hidden" name="cmd" value="_xclick">
+    $form['paypal']['no_note'] = array(
+      '#type' => 'hidden',
+      '#value' => '1',
+    );
+//<input type="hidden" name="no_note" value="1">
+    $form['paypal']['business'] = array(
+      '#type' => 'hidden',
+      '#value' => 'office@specialistsofschools.org',
+    );
+//<input type="hidden" name="business" value="your@paypalaccount.com">
+    $form['paypal']['currency_code'] = array(
+      '#type' => 'hidden',
+      '#value' => 'USD',
+    );
+//<input type="hidden" name="currency_code" value="USD">
+    $form['paypal']['return'] = array(
+      '#type' => 'hidden',
+      '#value' => 'http://www.specialistsofschools.org/beta/membership/payment-complete',
+    );
+//<input type="hidden" name="return" value="http://mysite.com/payment-complete/">
+    $form['paypal']['item_name'] = array(
+      '#type' => 'hidden',
+      '#value' => 'Annual Membership Fee',
+    );
+//<input name="item_name" type="hidden" id="item_name" value="">
+    $form['paypal']['amount'] = array(
+      '#type' => 'hidden',
+      '#value' => '45',
+    );
+//<input name="amount" type="hidden" id="amount" value="">
+
+/*
+    $form['actions']['hosted_button_id'] = array(
+      '#type' => 'hidden',
+      '#value' => 'B7FYBJD476CZS',
+    );*/
+//    <input type="hidden" name="hosted_button_id" value="B7FYBJD476CZS">

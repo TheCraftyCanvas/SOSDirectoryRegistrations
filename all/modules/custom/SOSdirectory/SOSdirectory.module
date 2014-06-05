@@ -1,0 +1,44 @@
+<?php
+/**
+ * @file
+ * SOS Directory module overrides and customizes Directory pages, search functionality.
+ */
+
+
+ /**
+ * Implements hook_help.
+ *
+ * Displays help and module information.
+ *
+ * @param path
+ *   Which path of the site we're using to display help
+ * @param arg
+ *   Array that holds the current path as returned from arg() function
+ */
+function SOSdirectory_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#SOSdirectory":
+      return '<p>'.  t("Customizes the SOS directory pages") .'</p>';
+      break;
+  }
+}
+
+
+
+/**
+ * Custom Directory Search by Name/Specialty form mods function.
+ * hook_form_alter
+ *
+ */
+function SOSdirectory_form_alter(&$form, &$form_state, $form_id) {
+  if($form['#id'] == 'views-exposed-form-directory-listing-page') {
+    if (empty($_GET['field_specialties_tid']))
+    {
+      //echo('<script>console.log("Directory page by name/specialty detected: hook_form_alter called via SOSdirectory module");</script>');
+      $form_state['input']['field_specialties_tid'] = 'All';
+    }
+  }
+  if($form['#id'] == 'views-exposed-form-professional-locator-page-1') {
+    //echo('<script>console.log("Directory page by specialty/proximity detected: hook_form_alter called via SOSdirectory module");</script>');
+  }
+}
