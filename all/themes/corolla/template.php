@@ -167,9 +167,9 @@ function corolla_fieldset($vars) {
   if (!empty($element['#description'])) {
     $output .= '<div class="fieldset-description">' . $element['#description'] . '</div>';
   }
-  $output .= $element['#children'];
+  $output .= (string)$element['#children'];
   if (isset($element['#value'])) {
-    $output .= $element['#value'];
+    $output .= (string)$element['#value'];
   }
   $output .= '</div>';
   $output .= "</fieldset>\n";

@@ -42,11 +42,26 @@ function spambot_settings_form($form, &$form_state) {
     '#description' => t('If ticked, new user registrations will be tested if they match any known spammers and blacklisted.'),
     '#default_value' => variable_get('spambot_user_register_protect', TRUE),
   ); 
-  $form['register']['spambot_blocked_message'] = array(
+  $form['register']['spambot_blocked_message_email'] = array(
     '#type' => 'textarea',
-    '#title' => t('User registration blocked message'),
-    '#default_value' => variable_get('spambot_blocked_message', t('Your email address or username is blacklisted.')),
-    '#description' => t('Message to display when user registration is blocked.'),
+    '#title' => t('User registration blocked message (blocked email address)'),
+    '#rows' => 1,
+    '#default_value' => variable_get('spambot_blocked_message_email', t(SPAMBOT_DEFAULT_BLOCKED_MESSAGE)),
+    '#description' => t('Message to display when user registration is blocked due to email address. <br />Showing a specific reason why registration was blocked may make spambot easier to circumvent.<br />The following tokens are available: @email %email @username %username @ip %ip'),
+  );
+  $form['register']['spambot_blocked_message_username'] = array(
+    '#type' => 'textarea',
+    '#title' => t('User registration blocked message (blocked username)'),
+    '#rows' => 1,
+    '#default_value' => variable_get('spambot_blocked_message_username', t(SPAMBOT_DEFAULT_BLOCKED_MESSAGE)),
+    '#description' => t('Message to display when user registration is blocked due to username.'),
+  );
+  $form['register']['spambot_blocked_message_ip'] = array(
+    '#type' => 'textarea',
+    '#title' => t('User registration blocked message (blocked ip address)'),
+    '#rows' => 1,
+    '#default_value' => variable_get('spambot_blocked_message_ip', t(SPAMBOT_DEFAULT_BLOCKED_MESSAGE)),
+    '#description' => t('Message to display when user registration is blocked due to ip address.'),
   );
   
   $sleep_options = array(0 => t('Don\'t delay'), 1 => t('1 second'));
@@ -61,25 +76,24 @@ function spambot_settings_form($form, &$form_state) {
     '#default_value' => variable_get('spambot_blacklisted_delay', 0),
   );
 
-  $form['register']['spambot_user_register_report'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Report blocked user registrations as spammers'),
-    '#description' => t('If ticked, new user registrations which were blocked as spammers are also reported to www.stopforumspam.com as spammers. Requires an API key.'),
-    '#default_value' => variable_get('spambot_user_register_report', FALSE),
-  );
-
   $form['existing'] = array(
     '#type' => 'fieldset',
     '#title' => t('Scan existing accounts'),
-    '#description' => t('This module can also check existing user accounts to see if they are known spammers. It works by checking user accounts with increasing uid\'s ie. user id 2, 3, 4 etc during cron. Any existing users found to be known spammers are logged. Blocked user accounts are not checked.'),
+    '#description' => t('This module can also scan existing user accounts to see if they are known spammers. It works by checking user accounts with increasing uid\'s ie. user id 2, 3, 4 etc during cron.'),
     '#collapsible' => TRUE,
   );
   $form['existing']['spambot_cron_user_limit'] = array(
     '#type' => 'textfield',
-    '#title' => t('Maximum number of user accounts to check per cron'),
-    '#description' => t('Enter the number of user accounts to check for each cron. If you do not want to check existing user accounts, leave this as 0.<br />Be careful not to make this value too large, as it will slow your cron execution down and may cause your site to query www.stopforumspam.com more times than allowed each day.'),
+    '#title' => t('Maximum number of user accounts to scan per cron'),
+    '#description' => t('Enter the number of user accounts to scan for each cron. If you do not want to scan existing user accounts, leave this as 0.<br />Be careful not to make this value too large, as it will slow your cron execution down and may cause your site to query www.stopforumspam.com more times than allowed each day.'),
     '#size' => 10,
     '#default_value' => variable_get('spambot_cron_user_limit', 0),
+  );
+  $form['existing']['spambot_check_blocked_accounts'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Scan blocked accounts'),
+    '#description' => t('Tick this to scan blocked accounts. Otherwise blocked accounts are not scanned.'),
+    '#default_value' => variable_get('spambot_check_blocked_accounts', FALSE),
   );
   $form['existing']['spambot_spam_account_action'] = array(
     '#type' => 'select',

@@ -3,7 +3,7 @@ jQuery.noConflict();
 jQuery(document).ready(function($) {
   if( $('.view-id-programs > .views-field-webform-form-body') ) {
     var descriptionTEXT = 'If you intend on obtaining CE or ACT 48 credits, or have special requests regarding this program- please indicate that here.';
-    console.log("program registration form found");
+    //console.log("program registration form found");
     $('#edit-submitted-notes').val(descriptionTEXT);
   }
 

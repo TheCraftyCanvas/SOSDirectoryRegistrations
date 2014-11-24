@@ -54,7 +54,7 @@ jQuery(document).ready(function($) {
     {
       $('li.crumb > a').html('Membership > Apply');
       $('#page-title').html("Apply for Membership");
-      var paperAppLink = '<p>You can complete the application process online by filling out the form below.  However, if you would rather apply by paper, <a class="faux-button" style="margin-left:0;" id="apply-manually" href="/sites/default/files/application.pdf" target="_blank">click here to print an application</a> that you can submit by mail.</p>';
+      var paperAppLink = '<p><strong>Membership is open to professionals who reside and practice in the Tri-State (PA, NJ, DE) area.</strong></p><p>You can complete the application process online by filling out the form below.  However, if you would rather apply by paper, <a class="faux-button" style="margin-left:0;" id="apply-manually" href="/sites/default/files/application.pdf" target="_blank">click here to print an application</a> that you can submit by mail.</p>';
       $(paperAppLink).insertBefore('#content > .region-content');
       var userAccountDiv = $('#edit-account').html();
       $('#edit-account').remove();

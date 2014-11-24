@@ -54,3 +54,12 @@ padding: 0 10px 0 10px;
 display:inline-block;
 position:relative;
 }
+
+
+
+/**** hide antispam username3 field ***/
+//admin view of user's main profile
+.page-user-edit #user-profile-form .group-background #edit-profile-main-field-username3 {
+  display: none;
+  visibility: hidden;
+}

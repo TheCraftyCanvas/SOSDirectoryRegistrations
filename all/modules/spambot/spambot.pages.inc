@@ -35,47 +35,52 @@ function spambot_user_spam_admin_form($form, &$form_state, $account) {
     '#default_value' => FALSE,
   );
 
-  // Fetch and process IP address information
-  $ips = spambot_account_ip_addresses($account);
-  $options = array();
-  $default = array();
-  foreach ($ips as $ip) {
-    $options[$ip] = $ip;
-    $default[$ip] = $ip;
-  }
-
-  $form['action']['report_user'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Report this account to www.stopforumspam.com as a spammer'),
-    '#description' => t('Requires that you have an API key from <a href="http://www.stopforumspam.com">www.stopforumspam.com</a> and at least one IP address selected below.'),
-    '#default_value' => FALSE,
-    '#disabled' => !count($options),
-  );
-
-  $form['action']['ip_info'] = array(
+  $form['action']['report'] = array(
     '#type' => 'fieldset',
-    '#title' => t('IP Addresses'),
-    '#description' => t('This is a list of IP addresses used by this account.'),
+    '#title' => t('Report this account to www.stopforumspam.com'),
+    '#tree' => TRUE,
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#description' => t('An API key from <a href="http://www.stopforumspam.com">www.stopforumspam.com</a> is required to report spammers.<br />Select one or more posts below to report them to www.stopforumspam.com.'),
   );
 
-  if (count($options)) {
-    $form['action']['ip_info']['ip_addresses'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('IP addresses to report'),
-      '#description' => t('If you wish to report this account as a spammer, at least one IP address must be selected.'),
-      '#options' => $options,
-      '#default_value' => $default,
-    );
+  // Fetch a list of reportable nodes
+  $form['action']['report']['nids'] = array();
+  $result = db_select('node_spambot')->fields('node_spambot', array('nid', 'hostname'))->condition('uid', $account->uid)->orderBy('nid', 'DESC')->range(0, 20)->execute();
+  $nid_hostnames = array();
+  foreach ($result as $record) {
+    $nid_hostnames[$record->nid] = $record->hostname;
   }
-  else {
-    $form['action']['ip_info']['ip_addresses'] = array(
-      '#type' => 'value', '#value' => array(),
-    );
-    $form['action']['ip_info']['#description'] .= '<br />' . t('No IP addresses found. IP address information for this user may have expired from storage.');
+
+  foreach ($nid_hostnames as $nid => $hostname) {
+    $node = node_load($nid);
+    if (!empty($node->nid)) {
+      $form['action']['report']['nids'][$nid] = array(
+        '#type' => 'checkbox',
+        '#title' => l(mb_strimwidth($node->title, 0, 128, '...'), 'node/' . $nid, array('attributes' => array('title' => mb_strimwidth($node->body['und'][0]['summary'] . "\n\n" . $node->body['und'][0]['value'], 0, 256, '...')))) . ' ' . t('(node, ip=@ip)', array('@ip' => $hostname)),
+      );
+    }
   }
-  
+
+  // Fetch a list of reportable comments
+  if (module_exists('comment')) {
+    $form['action']['report']['cids'] = array();
+    $result = db_select('comment')->fields('comment', array('cid'))->condition('uid', $account->uid)->orderBy('cid', 'DESC')->range(0, 20)->execute();
+    $cids = array();
+    foreach ($result as $record) {
+      $cids[$record->cid] = $record->cid;
+    }
+
+    foreach ($cids as $cid) {
+      $comment = comment_load($cid);
+      if (!empty($comment->cid)) {
+        $form['action']['report']['cids'][$cid] = array(
+          '#type' => 'checkbox',
+          '#title' => l(mb_strimwidth($comment->subject, 0, 128, '...'), 'node/' . $comment->nid, array('fragment' => 'comment-'. $comment->cid, 'attributes' => array('title' => mb_strimwidth($comment->comment_body['und'][0]['value'], 0, 256, '...')))) . ' ' . t('(comment, ip=@ip)', array('@ip' => $comment->hostname)),
+        );
+      }
+    }
+  }
+
   $form['action']['block_user'] = array(
     '#type' => 'checkbox',
     '#title' => t('Block this account'),
@@ -94,6 +99,17 @@ function spambot_user_spam_admin_form($form, &$form_state, $account) {
   return $form;
 }
 
+function spambot_user_spam_admin_form_validate($form, &$form_state) {
+  $key_required = (!empty($form_state['values']['report']['nids']) && count(array_filter($form_state['values']['report']['nids']))) ? TRUE : FALSE;  
+  if (module_exists('comment')) {
+    $key_required = (!empty($form_state['values']['report']['cids']) && count(array_filter($form_state['values']['report']['cids']))) || $key_required;
+  }
+
+  if ($key_required && (!variable_get('spambot_sfs_api_key', FALSE))) {
+    form_set_error('', t('To report spammers to www.stopforumspam.com, you need to register for an API key at <a href="http://www.stopforumspam.com">www.stopforumspam.com</a> and enter it into the !page.', array('!page' => l('spambot settings', 'admin/config/system/spambot'))));
+  }
+}
+
 function spambot_user_spam_admin_form_submit($form, &$form_state) {
   $account = user_load($form_state['values']['uid']);
   if ($form_state['values']['op'] == $form_state['values']['check']) {
@@ -107,11 +123,11 @@ function spambot_user_spam_admin_form_submit($form, &$form_state) {
     $data = array();
     if (spambot_sfs_request($request, $data)) {
       if (!empty($data['email']['appears'])) {
-        $messages[] = t('This account\'s email address matches @num times: @email', array('@email' => $request['email'], '@num' => $data['email']['frequency']));
+        $messages[] = t('This account\'s email address matches @num times: !link', array('!link' => l($request['email'], 'http://www.stopforumspam.com/search?q=' . $request['email']), '@num' => $data['email']['frequency']));
       }
 
       if (!empty($data['username']['appears'])) {
-        $messages[] = t('This account\'s username matches @num times: @username', array('@username' => $request['username'], '@num' => $data['username']['frequency']));
+        $messages[] = t('This account\'s username matches @num times: !link', array('!link' => l($request['username'], 'http://www.stopforumspam.com/search?q=' . $request['username']), '@num' => $data['username']['frequency']));
       }
     }
     else {
@@ -132,7 +148,7 @@ function spambot_user_spam_admin_form_submit($form, &$form_state) {
         $data = array();
         if (spambot_sfs_request($request, $data)) {
           if (!empty($data['ip']['appears'])) {
-            $messages[] = t('An IP address @ip used by this account matches @num times.', array('@ip' => $ip, '@num' => $data['ip']['frequency']));
+            $messages[] = t('An IP address !ip used by this account matches @num times.', array('!ip' => l($ip, 'http://www.stopforumspam.com/search?q=' . $ip), '@num' => $data['ip']['frequency']));
           }
         }
         else {
@@ -169,33 +185,49 @@ function spambot_user_spam_admin_form_submit($form, &$form_state) {
       }
     }
 
-    // Report user as spammer
-    if (!empty($form_state['values']['report_user'])) {
-      if (variable_get('spambot_sfs_api_key', FALSE)) {
-        $ips = array_filter($form_state['values']['ip_addresses']);
-        if (count($ips) == 0) {
-          drupal_set_message(t('This account cannot be reported without an IP address.'), 'warning');
-        }
-        else if (spambot_report_account($account, $ips)) {
-          drupal_set_message(t('This account has been reported as a spammer.'));
-        }
-        else {
-          drupal_set_message(t('There was an error reporting this account as a spammer.'), 'error');
-        }
-      }
-      else {
-        drupal_set_message(t('To report spammers to www.stopforumspam.com, you need to register for an API key at <a href="http://www.stopforumspam.com">www.stopforumspam.com</a> and enter it into the !page.', array('!page' => l('Stop forum spam settings', 'admin/settings/stopforumspam'))));
-      }
-    }
-
     // Prepare some data
     $nodes = db_select('node')->fields('node', array('nid'))
       ->condition('uid', $account->uid, '=')->orderBy('nid')->execute()->fetchCol();
+
+    $node_hostnames = array();
+    $result = db_select('node_spambot')->fields('node_spambot', array('nid', 'hostname'))->condition('uid', $account->uid)->orderBy('nid', 'DESC')->execute();
+    foreach ($result as $record) {
+      $node_hostnames[$record->nid] = $record->hostname;
+    }
 
     $comments = array();
     if (module_exists('comment')) {
       $comments = db_select('comment')->fields('comment', array('cid'))
         ->condition('uid', $account->uid, '=')->orderBy('cid')->execute()->fetchCol();
+    }
+
+    // Report posts to www.stopforumspam.com
+    if (!empty($form_state['values']['report']['nids'])) {
+      foreach (array_filter($form_state['values']['report']['nids']) as $nid => $unused) {
+        $node = node_load($nid);
+        if (!empty($node->nid)) {
+          if (spambot_report_account($account, $node_hostnames[$nid], $node->title . "\n\n" . $node->body['und'][0]['summary'] . "\n\n" . $node->body['und'][0]['value'])) {
+            drupal_set_message(t('Node %title has been reported.', array('%title' => $node->title)));
+          }
+          else {
+            drupal_set_message(t('There was a problem reporting node %title.', array('%title' => $node->title)));
+          }
+        }
+      }
+    }
+
+    if (module_exists('comment') && !empty($form_state['values']['report']['cids'])) {
+      foreach (array_filter($form_state['values']['report']['cids']) as $cid => $unused) {
+        $comment = comment_load($cid);
+        if (!empty($comment->cid)) {
+          if (spambot_report_account($account, $comment->hostname, $comment->subject . "\n\n" . $comment->comment_body['und'][0]['value'])) {
+            drupal_set_message(t('Comment %title has been reported.', array('%title' => $comment->subject)));
+          }
+          else {
+            drupal_set_message(t('There was a problem reporting comment %title.', array('%title' => $comment->subject)));
+          }
+        }
+      }
     }
 
     // Delete nodes and content

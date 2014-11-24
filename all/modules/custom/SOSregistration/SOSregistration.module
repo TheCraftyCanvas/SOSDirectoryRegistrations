@@ -37,7 +37,7 @@ function SOSregistration_form_user_register_form_validate(&$form, &$form_state, 
     return false;
   }
   $email = $form_state['values']['mail'];
-  if ( strpos($email, '@netcourrier') != false) {
+  if ( ( strpos($email, '@netcourrier') != false) || ( strpos($email, '@drupaler.org') != false) ) {
     form_set_error('mail', t('Sorry something has gone wrong. Please try again.'));
     return false;
   }
@@ -64,6 +64,8 @@ function SOSregistration_form_user_register_form_alter(&$form, &$form_state, $fo
        }
 */
     $form['#submit'][] = 'profile2_form_submit_handler';
+    $uid = $form_state['user']->uid;
+    //watchdog('SOSregistration', t('profile2_form_submit_handler returned, form state uid is %1.', array('%1'=>$form_state['user']->uid)), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
     $form['#submit'][] = 'SOSregistration_syncLocationContent';
     $form['#submit'][] = 'new_profile_form_submitted';
 
@@ -71,6 +73,7 @@ function SOSregistration_form_user_register_form_alter(&$form, &$form_state, $fo
 
 
 function new_profile_form_submitted($form, &$form_state) {
+    echo '<script>alert();</script>';
     $form_state['redirect'] = 'node/75';
 }
 
@@ -87,7 +90,7 @@ function SOSregistration_form_user_profile_form_alter(&$form, &$form_state, $for
 //  watchdog('SOSregistration', t('User profile form: hook_form_alter called via SOSregistration module.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
 
   $form['#submit'][] = 'profile2_form_submit_handler';
-//  watchdog('SOSregistration', t('profile2_form submit handler assigned.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+  //watchdog('SOSregistration', t('profile2_form submit handler assigned.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
 
   $form['#submit'][] = 'SOSregistration_syncLocationContent';
 //  watchdog('SOSregistration', t('sync location handler assigned', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
@@ -110,12 +113,10 @@ function updated_profile_form_submitted(&$form, &$form_state) {
  * Sync posts from database profile fields to location fields filtered by User ID
  *
  */
-function SOSregistration_syncLocationContent() {
+function SOSregistration_syncLocationContent(&$form, &$form_state) {
 //  echo('<script>console.log("sos_membership syncContent function called")</script>');
 
-  global $user;
-  $uid = $user->uid;
-
+  $uid = $form_state['user']->uid;
 
 /*  //if it is an administrator, then use the user id in the url structure
   if( in_array( array('list-administrator','administrator'), $user->roles) )
@@ -131,10 +132,10 @@ function SOSregistration_syncLocationContent() {
 
 
   //Use Database API to retrieve profile and update location record for user.
-    watchdog('SOSregistration', t('Member user id detected as %uid.  Proceeding to sync/update profile and location records.', array('%uid'=>$uid)), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+  //  watchdog('SOSregistration', t('Member user id detected as %uid.  Proceeding to sync/update profile and location records.', array('%uid'=>$uid)), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
 
 
-  $query1 = '
+  $query1 = "
     SELECT
     users.name AS Name,
     users.uid AS UserID,
@@ -154,7 +155,7 @@ function SOSregistration_syncLocationContent() {
     field_data_field_state_pvt.field_state_pvt_value AS StateAlt,
     field_data_field_zip_code_pvt.field_zip_code_pvt_value AS ZipAlt
     FROM users
-    LEFT JOIN profile ON users.uid = profile.uid AND profile.type = \'main\'
+    LEFT JOIN profile ON users.uid = profile.uid AND profile.type = 'main'
     LEFT JOIN field_data_field_member_name_part2 ON profile.pid = field_data_field_member_name_part2.entity_id
     LEFT JOIN field_data_field_member_name_part1 ON profile.pid = field_data_field_member_name_part1.entity_id
     LEFT JOIN field_data_field_organization_name ON profile.pid = field_data_field_organization_name.entity_id
@@ -169,10 +170,12 @@ function SOSregistration_syncLocationContent() {
     LEFT JOIN field_data_field_city_state_zip_pvt ON profile.pid = field_data_field_city_state_zip_pvt.entity_id
     LEFT JOIN field_data_field_state_pvt ON profile.pid = field_data_field_state_pvt.entity_id
     LEFT JOIN field_data_field_zip_code_pvt ON profile.pid = field_data_field_zip_code_pvt.entity_id
-    WHERE (users.uid = ' . $uid . ')
-  ';
+    WHERE (users.uid = " . $uid . ")
+  ";
   $result = db_query($query1);
 
+  print_r($result);
+  
   $location_Name = $location_NameAlt = "";
   $location_StreetAddress = $location_StreetAddressAlt = "";
   $location_StreetAddress2 = $location_StreetAddress2Alt = "";
@@ -182,129 +185,131 @@ function SOSregistration_syncLocationContent() {
   $location_Country = $location_CountryAlt = "";
 
   // a location listing can only exist if a street address exists with city, state, zip.  Should any of those fields be empty, then the location record would be incomplete.
-  $bool_location_validity = true;
-  $bool_location2_validity = true;
+  $bool_location_invalid = true;
+  $bool_location2_invalid = true;
 
   foreach ($result as $record) {
     if($record->Company <> "") {
       $location_Name = $record->Company;
     } else  {
       $location_Name = "";
-      $bool_location_validity = true;
+      $bool_location_invalid = true;
     }
     if($record->StreetAddress <> "") {
       $location_StreetAddress = $record->StreetAddress;
-      $bool_location_validity = false;
-      $bool_location_validity = ($bool_location_validity && true);
+      $bool_location_invalid = false;
+      $bool_location_invalid = ($bool_location_invalid && true);
     }
     if($record->StreetAddress2 <> "") {
       $location_StreetAddress2 = $record->StreetAddress2;
-      $bool_location_validity = false;
+      $bool_location_invalid = false;
     } else  {
       $location_StreetAddress2 = "";
-      $bool_location_validity = ($bool_location_validity && true);
+      $bool_location_invalid = ($bool_location_invalid && true);
     }
     if($record->City <> "") {
       $location_City = $record->City;
-      $bool_location_validity = false;
+      $bool_location_invalid = false;
     } else  {
       $location_City = "";
-      $bool_location_validity = ($bool_location_validity && true);
+      $bool_location_invalid = ($bool_location_invalid && true);
     }
     if($record->State <> "") {
       $location_State = $record->State;
     } else  {
       $location_State = "";
-      $bool_location_validity = ($bool_location_validity && true);
+      $bool_location_invalid = ($bool_location_invalid && true);
     }
     if($record->Zip <> "") {
       $location_Zip = $record->Zip;
-      $bool_location_validity = false;
+      $bool_location_invalid = false;
     } else {
       $location_Zip = "";
-      $bool_location_validity = ($bool_location_validity && true);
+      $bool_location_invalid = ($bool_location_invalid && true);
     }
-    if(!($bool_location_validity))
+    if(!($bool_location_invalid))
       $location_Country = 'us';
+
+
 
     if($record->CompanyAlt <> "") {
       $location_NameAlt = $record->CompanyAlt;
+      $bool_location2_invalid = false;
     } else  {
       $location_NameAlt = "";
-      $bool_location2_validity = true;
     }
     if($record->StreetAddressAlt <> "") {
       $location_StreetAddressAlt = $record->StreetAddressAlt;
-      $bool_location2_validity = false;
-      $bool_location2_validity = ($bool_location2_validity && true);
+      $bool_location2_invalid = false;
     }
     if($record->StreetAddress2Alt <> "") {
       $location_StreetAddress2Alt = $record->StreetAddress2Alt;
-      $bool_location2_validity = false;
     } else  {
       $location_StreetAddress2Alt = "";
-      $bool_location2_validity = ($bool_location2_validity && true);
     }
     if($record->CityAlt <> "") {
       $location_CityAlt = $record->CityAlt;
-      $bool_location2_validity = false;
+      $bool_location2_invalid = false;
     } else  {
       $location_CityAlt = "";
-      $bool_location2_validity = ($bool_location2_validity && true);
+      $bool_location2_invalid = ($bool_location2_invalid && true);
     }
     if($record->StateAlt <> "") {
       $location_StateAlt = $record->StateAlt;
     } else  {
       $location_StateAlt = "";
-      $bool_location2_validity = ($bool_location2_validity && true);
+      $bool_location2_invalid = ($bool_location2_invalid && true);
     }
     if($record->ZipAlt <> "") {
       $location_ZipAlt = $record->ZipAlt;
-      $bool_location2_validity = false;
+      $bool_location2_invalid = false;
     } else {
       $location_ZipAlt = "";
-      $bool_location2_validity = ($bool_location2_validity && true);
+      $bool_location2_invalid = ($bool_location2_invalid && true);
     }
-    if(!($bool_location2_validity))
+    if(!($bool_location2_invalid))
       $location_CountryAlt = 'us';
   } //end foreach
 
-  if(!($bool_location_validity)) {
+
+  if(!($bool_location_invalid)) {
 /*
-    echo('<script>console.log("Valid primary location record provided")</script>');
-    echo('<script>console.log("Location Name: ' . $location_Name . '")</script>');
-    echo('<script>console.log("Location Address1: ' . $location_StreetAddress . '")</script>');
-    echo('<script>console.log("Location Address2: ' . $location_StreetAddress2 . '")</script>');
-    echo('<script>console.log("Location City: ' . $location_City . '")</script>');
-    echo('<script>console.log("Location State: ' . $location_State . '")</script>');
-    echo('<script>console.log("Location Zip: ' . $location_Zip . '")</script>');
-    echo('<script>console.log("Location Country: ' . $location_Country . '")</script>');
+    watchdog('SOSregistration', t('Valid primary location record provided', array() ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('Location Name: %1', array('%1'=>$location_Name) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('Location Address1: %1', array('%1'=>$location_StreetAddress) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('Location Address2: %1', array('%1'=>$location_StreetAddress2) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('Location City: %1', array('%1'=>$location_City) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('Location State: %1', array('%1'=>$location_State) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('Location Zip: %1', array('%1'=>$location_Zip) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('Location Country: %1', array('%1'=>$location_Country) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
 */
 } else {
-/*
-  echo('<script>console.log("No primary location detected in profile")</script>');
-*/
+
+  //watchdog('SOSregistration', t('No primary location detected in profile', array() ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+
   }
-  if(!($bool_location2_validity)) {
+  if(!($bool_location2_invalid)) {
 /*
-    echo('<script>console.log("Valid secondary location record provided")</script>');
-    echo('<script>console.log("2ndary Location Name: ' . $location_NameAlt . '")</script>');
-    echo('<script>console.log("2ndary Location Address1: ' . $location_StreetAddressAlt . '")</script>');
-    echo('<script>console.log("2ndary Location Address2: ' . $location_StreetAddress2Alt . '")</script>');
-    echo('<script>console.log("2ndary Location City: ' . $location_CityAlt . '")</script>');
-    echo('<script>console.log("2ndary Location State: ' . $location_StateAlt . '")</script>');
-    echo('<script>console.log("2ndary Location Zip: ' . $location_ZipAlt . '")</script>');
-    echo('<script>console.log("2ndary Location Country: ' . $location_CountryAlt . '")</script>');
+    watchdog('SOSregistration', t('Valid secondary location record provided', array() ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+
+    watchdog('SOSregistration', t('Valid secondary location record provided', array() ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('2ndary Location Name: %1', array('%1'=>$location_NameAlt) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('2ndary Location Address1: %1', array('%1'=>$location_StreetAddressAlt) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('2ndary Location Address2: %1', array('%1'=>$location_StreetAddress2Alt) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('2ndary Location City: %1', array('%1'=>$location_CityAlt) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('2ndary Location State: %1', array('%1'=>$location_StateAlt) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('2ndary Location Zip: %1', array('%1'=>$location_ZipAlt) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+    watchdog('SOSregistration', t('2ndary Location Country: %1', array('%1'=>$location_CountryAlt) ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
 */
   } else {
-/*
-    echo('<script>console.log("No secondary location detected in profile")</script>');
-*/
+
+  //watchdog('SOSregistration', t('No secondary location detected in profile', array() ), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+
   }
 
 
   // after pulling profile data, check to see if location instance(s) exist(s) for this user; if so- delete them.
-//  watchdog('SOSregistration', t('Proceeding to check for existing location assigned to this user.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+  //watchdog('SOSregistration', t('Proceeding to check for existing location assigned to this user.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
 
   $query = '
     SELECT
@@ -314,6 +319,7 @@ function SOSregistration_syncLocationContent() {
     WHERE (location_instance.uid = ' . $uid . ')
   ';
   $lid_result = db_query($query);
+
   $locationID = array();
   $i = 0;
   foreach ($lid_result as $record) {
@@ -329,13 +335,13 @@ function SOSregistration_syncLocationContent() {
   }
 
   // check to see if profile has valid primary and/or secondary locations. If they do, perform SQL record insertions.
-  if(!($bool_location_validity)) {
+  if(!($bool_location_invalid)) {
+    //watchdog('SOSregistration', t('Inserting new primary location record.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
     SOSregistration_insertLocation($uid, $location_Name, $location_StreetAddress, $location_StreetAddress2, $location_City, $location_State, $location_Zip, $location_Country);
-//    watchdog('SOSregistration', t('Primary location record and and associated pointer record added.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
   }
-  if(!($bool_location2_validity)) {
+  if(!($bool_location2_invalid)) {
+    //watchdog('SOSregistration', t('Inserting new secondary location record.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
     SOSregistration_insertLocation($uid, $location_NameAlt, $location_StreetAddressAlt, $location_StreetAddress2Alt, $location_CityAlt, $location_StateAlt, $location_ZipAlt, $location_CountryAlt);
-//    watchdog('SOSregistration', t('Secondary location record and and associated pointer record added.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
   }
 
 }  // function SOSregistration_syncLocationContent()
@@ -351,7 +357,7 @@ function SOSregistration_syncLocationContent() {
  */
 function SOSregistration_insertLocation($uid, $org, $addr1, $addr2, $city, $state, $zip, $country)
 {
-  echo('<script>console.log("Location Table insertion required");</script>');
+  //watchdog('SOSregistration', t('Inserting new location record.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
     $insertQuery = db_insert('location')
     ->fields(array(
       'name' => $org,
@@ -374,7 +380,6 @@ function SOSregistration_insertLocation($uid, $org, $addr1, $addr2, $city, $stat
     ))
     ->execute();
 
-  echo('<script>console.log("SQL insertions complete.");</script>');
 } // function SOSregistration_insertLocation($uid, $org, $addr1, $addr2, $city, $state, $zip, $country)
 
 
@@ -388,14 +393,15 @@ function SOSregistration_insertLocation($uid, $org, $addr1, $addr2, $city, $stat
  *
  */
 function SOSregistration_deleteLocationInstance($index) {
-  echo('<script>console.log("Proceeding to remove location record #' . $index . '");</script>');
+   // watchdog('SOSregistration', t('Deleting prior location record.', array()), $variables = array(), $severity = WATCHDOG_INFO, $link = NULL);
+//  echo('<script>console.log("Proceeding to remove location record #' . $index . '");</script>');
   $deleteQuery1 = db_delete('location_instance')
     ->condition('lid', $index)
     ->execute();
   $deleteQuery2 = db_delete('location')
     ->condition('lid', $index)
     ->execute();
-  echo('<script>console.log("Prior location record removed from both location_instance and location tables")</script>');
+//  echo('<script>console.log("Prior location record removed from both location_instance and location tables")</script>');
 } // function SOSregistration_deleteLocationInstance($index)
 
 

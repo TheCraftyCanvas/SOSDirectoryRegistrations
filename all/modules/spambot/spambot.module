@@ -9,6 +9,8 @@ define('SPAMBOT_ACTION_NONE', 0);
 define('SPAMBOT_ACTION_BLOCK', 1);
 define('SPAMBOT_ACTION_DELETE', 2);
 
+define('SPAMBOT_DEFAULT_BLOCKED_MESSAGE', 'Your email address or username or IP address is blacklisted.');
+
 /**
  * Implements hook_permission()
  */
@@ -30,7 +32,7 @@ function spambot_menu() {
     'description' => 'Configure the spambot module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('spambot_settings_form'),
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer site configuration'),
     'file' => 'spambot.admin.inc',
   );
 
@@ -84,34 +86,28 @@ function spambot_user_register_validate($form, &$form_state) {
   if (count($request)) {
     $data = array();
     if (spambot_sfs_request($request, $data)) {
+      $substitutions = array(
+        '@email' => $form_state['values']['mail'], '%email' => $form_state['values']['mail'],
+        '@username' => $form_state['values']['name'], '%username' => $form_state['values']['name'],
+        '@ip' => ip_address(), '%ip' => ip_address(),
+      );
+
       $reasons = array();
       if ($email_threshold > 0 && !empty($data['email']['appears']) && $data['email']['frequency'] >= $email_threshold) {
+        form_set_error('mail', t(variable_get('spambot_blocked_message_email', t(SPAMBOT_DEFAULT_BLOCKED_MESSAGE)), $substitutions));
         $reasons[] = t('email=@value', array('@value' => $request['email']));
       }
       if ($username_threshold > 0 && !empty($data['username']['appears']) && $data['username']['frequency'] >= $username_threshold) {
+        form_set_error('name', t(variable_get('spambot_blocked_message_username', t(SPAMBOT_DEFAULT_BLOCKED_MESSAGE)), $substitutions));
         $reasons[] = t('username=@value', array('@value' => $request['username']));
       }
       if ($ip_threshold > 0 && !empty($data['ip']['appears']) && $data['ip']['frequency'] >= $ip_threshold) {
+        form_set_error('', t(variable_get('spambot_blocked_message_ip', t(SPAMBOT_DEFAULT_BLOCKED_MESSAGE)), $substitutions));
         $reasons[] = t('ip=@value', array('@value' => $request['ip']));
       }
 
       if (count($reasons)) {
         watchdog('spambot', 'Blocked registration: @reasons', array('@reasons' => join(',', $reasons)));
-        $message = variable_get('spambot_blocked_message', t('Your email address or username is blacklisted.'));
-        form_set_error('name', $message);
-        form_set_error('mail', $message);
-
-        // Auto reporting if configured
-        $key = variable_get('spambot_sfs_api_key', FALSE);
-        if ($key && variable_get('spambot_user_register_report', FALSE)) {
-          // Make up a dummy account object.
-          $account = new StdClass();
-          $account->mail = $form_state['values']['mail'];
-          $account->name = $form_state['values']['name'];
-          $ip = ip_address();
-          spambot_report_account($account, array($ip));
-          watchdog('spambot', 'Reported as spammer: email=@email,username=@username,ip=@ip', array('@email' => $account->mail, '@username' => $account->name, '@ip' => $ip));
-        }
 
         // Slow them down if configured
         $delay = variable_get('spambot_blacklisted_delay', 0);
@@ -124,36 +120,21 @@ function spambot_user_register_validate($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_user_operations()
+ * Implementation of hook_node_insert
+ *
+ * Keeps table node_spambot up to date
  */
-function spambot_user_operations($form_state = array()) {
-  $operations = array(
-    'spambot_report' => array(
-      'label' => t('Block and report the selected users as spammers'),
-      'callback' => 'spambot_user_operations_report',
-    ),
-  );
-  return $operations;
+function spambot_node_insert($node) {
+  db_insert('node_spambot')->fields(array('nid' => $node->nid, 'uid' => $node->uid, 'hostname' => ip_address()))->execute();
 }
 
-function spambot_user_operations_report($accounts) {
-  $key = variable_get('spambot_sfs_api_key', FALSE);
-  if (!$key) {
-    drupal_set_message(t('If you wish to report spammers to Stop Forum Spam, you need to register for an API key at the <a href="http://www.stopforumspam.com">Stop Forum Spam</a> website.'));
-    return;
-  }
-  
-  foreach (user_load_multiple($accounts) as $account) {
-    $ips = spambot_account_ip_addresses($account);
-    if (count($ips)) {
-      spambot_report_account($account, $ips);
-    }
-    else {
-      drupal_set_message(t('Reporting %name as a spammer failed because there are no IP addresses stored for that user.', array('%name' => $account->name)));
-    }
-  }
-  // Blocking accounts seems to clear IP addresses from sessions table so do it after
-  user_user_operations_block($accounts);
+/**
+ * Implementation of hook_node_delete
+ *
+ * Keeps table node_spambot up to date
+ */
+function spambot_node_delete($node) {
+  db_delete('node_spambot')->condition('nid', $node->nid)->execute();
 }
 
 /**
@@ -169,42 +150,50 @@ function spambot_cron() {
     }
 
     $uids = db_select('users')->fields('users', array('uid'))
-      ->condition('status', 0, '<>')->condition('uid', $last_uid, '>')->orderBy('uid')
+      ->condition('uid', $last_uid, '>')->orderBy('uid')
       ->range(0, $limit)->execute()->fetchCol();
 
     $action = variable_get('spambot_spam_account_action', SPAMBOT_ACTION_NONE);
     foreach ($uids as $uid) {
       $account = user_load($uid);
       
-      $result = spambot_account_is_spammer($account);
-      if ($result > 0) {
-        $link = l(t('spammer'), 'user/' . $account->uid);
-        switch (user_access('protected from spambot scans', $account) ? SPAMBOT_ACTION_NONE : $action) {
-          case SPAMBOT_ACTION_BLOCK:
-            user_save($account, array('status' => 0));
-            watchdog('spambot', 'Blocked spam account: @name &lt;@email&gt; (uid @uid)', array('@name' => $account->name, '@email' => $account->mail, '@uid' => $account->uid), WATCHDOG_NOTICE, $link);
-            break;
+      if ($account->status || variable_get('spambot_check_blocked_accounts', FALSE)) {
+        $result = spambot_account_is_spammer($account);
+        if ($result > 0) {
+          $link = l(t('spammer'), 'user/' . $account->uid);
+          switch (user_access('protected from spambot scans', $account) ? SPAMBOT_ACTION_NONE : $action) {
+            case SPAMBOT_ACTION_BLOCK:
+              if ($account->status) {
+                user_save($account, array('status' => 0));
+                watchdog('spambot', 'Blocked spam account: @name &lt;@email&gt; (uid @uid)', array('@name' => $account->name, '@email' => $account->mail, '@uid' => $account->uid), WATCHDOG_NOTICE, $link);
+              }
+              else {
+                // Don't block an already blocked account
+                watchdog('spambot', t('Spam account already blocked: @name &lt;@email&gt; (uid @uid)', array('@name' => $account->name, '@email' => $account->mail, '@uid' => $account->uid)), array(), WATCHDOG_NOTICE, $link);
+              }
+              break;
 
-          case SPAMBOT_ACTION_DELETE:
-            user_delete($account->uid);
-            watchdog('spambot', 'Deleted spam account: @name &lt;@email&gt; (uid @uid)', array('@name' => $account->name, '@email' => $account->mail, '@uid' => $account->uid), WATCHDOG_NOTICE, $link);
-            break;
+            case SPAMBOT_ACTION_DELETE:
+              user_delete($account->uid);
+              watchdog('spambot', 'Deleted spam account: @name &lt;@email&gt; (uid @uid)', array('@name' => $account->name, '@email' => $account->mail, '@uid' => $account->uid), WATCHDOG_NOTICE, $link);
+              break;
 
-          default:
-            watchdog('spambot', 'Found spam account: @name &lt;@email&gt; (uid @uid)', array('@name' => $account->name, '@email' => $account->mail, '@uid' => $account->uid), WATCHDOG_NOTICE, $link);
-            break;
+            default:
+              watchdog('spambot', 'Found spam account: @name &lt;@email&gt; (uid @uid)', array('@name' => $account->name, '@email' => $account->mail, '@uid' => $account->uid), WATCHDOG_NOTICE, $link);
+              break;
+          }
+          // Mark this uid as successfully checked
+          variable_set('spambot_last_checked_uid', $uid);
         }
-        // Mark this uid as successfully checked
-        variable_set('spambot_last_checked_uid', $uid);
+        else if ($result == 0) {
+          // Mark this uid as successfully checked
+          variable_set('spambot_last_checked_uid', $uid);
+        }
+        else if ($result < 0) {
+          // Error contacting service, so pause processing
+          break;
+        }
       }
-      else if ($result == 0) {
-        // Mark this uid as successfully checked
-        variable_set('spambot_last_checked_uid', $uid);
-      }
-      else if ($result < 0) {
-        // Error contacting service, so pause processing
-        break;
-      }    
     }
   }
 }
@@ -343,6 +332,11 @@ function spambot_account_is_spammer($account) {
 function spambot_account_ip_addresses($account) {
   $hostnames = array();
 
+  // Retrieve IPs from node_spambot table
+  $items = db_select('node_spambot')->fields('node_spambot', array('hostname'))
+    ->condition('uid', $account->uid, '=')->distinct()->execute()->fetchCol();
+  $hostnames = array_merge($hostnames, $items);
+
   // Retrieve IPs from any sessions which may still exist
   $items = db_select('sessions')->fields('sessions', array('hostname'))
     ->condition('uid', $account->uid, '=')->distinct()->execute()->fetchCol();  
@@ -374,39 +368,41 @@ function spambot_account_ip_addresses($account) {
 }
 
 /**
- * Reports an account as a spammer
+ * Reports an account as a spammer. Requires ip address and evidence of a single incident
  *
  * @param $account
  *   Account to report
- * @param $ips
- *   An array of IP addresses to report.
- *   If there are no IPs, the report will fail. 
+ * @param $ip
+ *   IP address to report
+ * @param $evidence
+ *   Evidence to report
  *
  * @return
  *   TRUE if successful, FALSE if error
  */
-function spambot_report_account($account, $ips) {
+function spambot_report_account($account, $ip, $evidence) {
   $success = FALSE;
   $key = variable_get('spambot_sfs_api_key', FALSE);
 
-  if ($key && count($ips)) {
+  if ($key) {
+    $query['api_key'] = $key;
     $query['email'] = $account->mail;
     $query['username'] = $account->name;
-    $query['api_key'] = $key;
+    $query['ip_addr'] = $ip;
+    $query['evidence'] = $evidence;
 
-    // Make one report for each IP
-    foreach ($ips as $ip) {
-      $query['ip_addr'] = $ip;
-      
-      $url = 'http://www.stopforumspam.com/add.php?' . http_build_query($query, '', '&');
-      $result = drupal_http_request($url);
-      if (!empty($result->code) && $result->code == 200 && !empty($result->data) && stripos($result->data, 'data submitted successfully') !== FALSE) {
-        // If one report is successful, then all are successful
-        $success = TRUE;
-      }
-      else {
-        watchdog('spambot', "Error reporting account: @url <pre>\n@dump</pre>", array('@url' => $url, '@dump' => print_r($result, TRUE)));
-      }
+    $url = 'http://www.stopforumspam.com/add.php?' . http_build_query($query, '', '&');
+    $result = drupal_http_request($url);
+    if (!empty($result->code) && $result->code == 200 && !empty($result->data) && stripos($result->data, 'data submitted successfully') !== FALSE) {
+      $success = TRUE;
+    }
+    else if (stripos($result->data, 'duplicate') !== FALSE) {
+      // www.stopforumspam.com can return a 503 code with data = '<p>recent duplicate entry</p>'
+      //   which we will treat as successful.
+      $success = TRUE;
+    }
+    else {
+      watchdog('spambot', "Error reporting account: @url <pre>\n@dump</pre>", array('@url' => $url, '@dump' => print_r($result, TRUE)));
     }
   }
 
